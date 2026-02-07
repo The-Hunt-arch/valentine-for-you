@@ -44,23 +44,39 @@ function App() {
     setIsShaking(true)
     setTimeout(() => setIsShaking(false), 500)
 
+    // Adjust movement range for mobile
+    const isMobile = window.innerWidth <= 768
+    const moveRange = isMobile ? 40 : 120
+    const verticalRange = isMobile ? 30 : 100
+
     // Move button to completely new random position
     const directions = [
-      { x: 150, y: 0 },    // right
-      { x: -150, y: 0 },   // left
-      { x: 0, y: 120 },    // down
-      { x: 0, y: -120 },   // up
-      { x: 120, y: 100 },   // diagonal down-right
-      { x: -120, y: 100 },  // diagonal down-left
-      { x: 120, y: -100 },  // diagonal up-right
-      { x: -120, y: -100 }, // diagonal up-left
+      { x: moveRange, y: 0 },    // right
+      { x: -moveRange, y: 0 },   // left
+      { x: 0, y: verticalRange },    // down
+      { x: 0, y: -verticalRange },   // up
+      { x: moveRange * 0.8, y: verticalRange * 0.8 },   // diagonal down-right
+      { x: -moveRange * 0.8, y: verticalRange * 0.8 },  // diagonal down-left
+      { x: moveRange * 0.8, y: -verticalRange * 0.8 },  // diagonal up-right
+      { x: -moveRange * 0.8, y: -verticalRange * 0.8 }, // diagonal up-left
     ]
     const randomDirection = directions[Math.floor(Math.random() * directions.length)]
-    // Add to current position to keep moving away
-    setNoButtonOffset(prev => ({
-      x: prev.x + randomDirection.x,
-      y: prev.y + randomDirection.y
-    }))
+    
+    // Add to current position with boundary constraints
+    setNoButtonOffset(prev => {
+      const newX = prev.x + randomDirection.x
+      const newY = prev.y + randomDirection.y
+      
+      // Keep button within reasonable bounds (mobile-friendly)
+      const maxOffset = isMobile ? 60 : 200
+      const constrainedX = Math.max(-maxOffset, Math.min(maxOffset, newX))
+      const constrainedY = Math.max(-maxOffset, Math.min(maxOffset, newY))
+      
+      return {
+        x: constrainedX,
+        y: constrainedY
+      }
+    })
   }
 
   const handleNoTouch = (e) => {
